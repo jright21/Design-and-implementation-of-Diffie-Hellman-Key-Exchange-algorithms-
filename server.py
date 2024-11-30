@@ -12,10 +12,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('DH_Server')
 
 class SecureServer:
-    def __init__(self, host='localhost', port=4000):
+    def __init__(self, host='0.0.0.0', port=4000):
         self.host = host
         self.port = port
-        print("Listening at 4000.")
         self.dh = DiffieHellman()
         self.server_socket = None
         self.encryption_key = None
@@ -40,7 +39,14 @@ class SecureServer:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.server_socket.bind((self.host, self.port))
             self.server_socket.listen(1)
-            logger.info(f"Server started on {self.host}:{self.port}")
+            
+            # Get the actual IP address of the server to display
+            hostname = socket.gethostname()
+            server_ip = socket.gethostbyname(hostname)
+            print(f"\n=== Secure Chat Server ===")
+            print(f"Server IP address: {server_ip}")
+            print(f"Listening for connections on port {self.port}...")
+
 
             while True:
                 client_socket, address = self.server_socket.accept()
@@ -78,6 +84,7 @@ class SecureServer:
                 self.server_socket.close()
 
     def handle_client(self, client_socket):
+        print("\nClient connected. Waiting for messages...")
         while True:
             try:
                 # Receive encrypted message and MAC
@@ -111,6 +118,9 @@ class SecureServer:
                 logger.error(f"Error in client communication: {e}")
                 break
 
+        print("\nClient disconnected")
+
 if __name__ == "__main__":
     server = SecureServer()
     server.start()
+    print("Server Started.")

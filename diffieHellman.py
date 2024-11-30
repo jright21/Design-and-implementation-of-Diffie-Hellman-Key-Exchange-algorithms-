@@ -53,3 +53,10 @@ class DiffieHellman:
             raise ValueError("Invalid public key")
         self.shared_secret = pow(other_public_key, self._private_key, self.P)
         return str(self.shared_secret).encode()
+    
+    def validate_public_key(self, other_public_key: int) -> bool:
+        """Validate the other party's public key."""
+        if not 1 < other_public_key < self.P:
+            return False
+        # Optional: Add additional validation if needed
+        return True

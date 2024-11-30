@@ -11,11 +11,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('DH_Client')
 
 class SecureClient:
-    def __init__(self, host='localhost', port=4000):
-        self.host = host
-        self.port = port
+    def __init__(self):
+        self.host = None
+        self.port = 4000 #fixed port
         self.dh = DiffieHellman()
-        print("Listening at 4000.")
         self.encryption_key = None
         # Pre-shared authentication key (in production, use proper key management)
         self.auth_key = b"server_secret_key"
@@ -29,6 +28,10 @@ class SecureClient:
 
     def start(self):
         try:
+            #Get server IP from user
+            print("\n=== Secure Chat Client ===")
+            self.host = input("Enter server IP address: ").strip()
+            print(f"\nConnecting to server at {self.host}...")
             client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client_socket.connect((self.host, self.port))
             logger.info("Connected to server")
@@ -47,7 +50,7 @@ class SecureClient:
                 self.encryption_key = CryptoUtils.derive_key(shared_secret, salt)
 
                 # Send test messages
-                self.send_messages(client_socket)
+                self.handle_user_input(client_socket)
 
             except Exception as e:
                 logger.error(f"Communication error: {e}")
@@ -57,10 +60,18 @@ class SecureClient:
         except Exception as e:
             logger.error(f"Client error: {e}")
 
-    def send_messages(self, client_socket):
-        for i in range(3):
+    def handle_user_input(self, client_socket):
+        print("\nChat started. Type 'quit' to exit.")
+        while True:
             try:
-                message = f"Test message {i+1}"
+                # Get user input for message
+                message = input("\nEnter your message: ")
+                
+                # Check if user wants to quit
+                if message.lower() == 'quit':
+                    logger.info("Chat ended by user")
+                    break
+
                 logger.info(f"Sending: {message}")
 
                 # Encrypt message
@@ -83,11 +94,12 @@ class SecureClient:
                 decrypted_response = CryptoUtils.decrypt_message(
                     self.encryption_key, encrypted_response, response_mac
                 )
-                logger.info(f"Received: {decrypted_response}")
+                print(f"Server response: {decrypted_response}")
 
             except Exception as e:
-                logger.error(f"Error sending message: {e}")
+                logger.error(f"Error in communication: {e}")
                 break
+
 
 if __name__ == "__main__":
     client = SecureClient()
