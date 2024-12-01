@@ -37,9 +37,10 @@ class SecureServer:
     def start(self):
         try:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.server_socket.bind((self.host, self.port))
             self.server_socket.listen(1)
-            
+
             # Get the actual IP address of the server to display
             hostname = socket.gethostname()
             server_ip = socket.gethostbyname(hostname)
